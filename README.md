@@ -8,14 +8,15 @@ Full design record in [docs/spec.md](docs/spec.md).
 
 ## Status
 
-**M0** - scaffold. Entra sign-in, user provisioning and the database schema are
-in place; there is no task UI yet. `/api/me` proves the whole auth path works
-end to end.
+**M0 complete**, 2026-08-25. Running at `https://tasks.lab.patobytes.com` on
+CT 217. Entra sign-in works end to end, `V1__init.sql` is applied, and the first
+`app_user` row was provisioned on first login. There is no task UI yet -
+`/api/me` is the whole of it.
 
 | M | Deliverable | State |
 |---|---|---|
-| M0 | Repo, CI, container build, CT, Entra registration, hello world behind login | in progress |
-| M1 | Owner-scoped CRUD, event log, main page, quick add, hierarchy rules | |
+| M0 | Repo, CI, container build, CT, Entra registration, hello world behind login | **done** |
+| M1 | Owner-scoped CRUD, event log, main page, quick add, hierarchy rules | next |
 | M2 | History page, closed-today boundary incl. midnight rollover | |
 | M3 | Tier 1 analytics + weekly review page | |
 | M4 | Tier 2 analytics | |
