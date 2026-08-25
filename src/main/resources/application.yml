@@ -40,7 +40,17 @@ spring:
         provider:
           entra:
             issuer-uri: https://login.microsoftonline.com/${ENTRA_TENANT_ID}/v2.0
-            user-name-attribute: oid
+            # MUST be a claim the UserInfo endpoint actually returns. Spring
+            # resolves this against the UserInfo response, and Microsoft's
+            # returns only sub, name, given_name, family_name, email and
+            # picture - no oid. Setting it to oid fails every login with
+            # "Attribute value for 'oid' cannot be null" before any application
+            # code runs.
+            #
+            # oid still identifies the user, but it lives in the ID token. The
+            # merged claim view on OidcUser exposes it, which is where
+            # UserProvisioningService reads it from.
+            user-name-attribute: sub
 
 server:
   port: 8080

@@ -29,7 +29,13 @@ public class UserProvisioningService extends OidcUserService {
     public OidcUser loadUser(OidcUserRequest request) throws OAuth2AuthenticationException {
         OidcUser oidcUser = super.loadUser(request);
 
-        String oid = oidcUser.getClaimAsString("oid");
+        // oid comes from the ID token, not the UserInfo endpoint - Microsoft's
+        // UserInfo response does not carry it. Read the ID token explicitly so
+        // this does not silently depend on claim-merging behaviour.
+        String oid = oidcUser.getIdToken().getClaimAsString("oid");
+        if (oid == null || oid.isBlank()) {
+            oid = oidcUser.getClaimAsString("oid");
+        }
         if (oid == null || oid.isBlank()) {
             // Without a stable object id there is nothing safe to key on, and
             // falling back to email would silently orphan tasks on a rename.

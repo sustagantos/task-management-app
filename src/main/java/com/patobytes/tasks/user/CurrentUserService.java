@@ -30,7 +30,11 @@ public class CurrentUserService {
             throw new IllegalStateException("No authenticated OIDC principal on this request");
         }
 
-        String oid = oidcUser.getClaimAsString("oid");
+        // Same source as provisioning: the ID token, not the UserInfo response.
+        String oid = oidcUser.getIdToken().getClaimAsString("oid");
+        if (oid == null || oid.isBlank()) {
+            oid = oidcUser.getClaimAsString("oid");
+        }
         return users.findByEntraOid(oid)
                 .orElseThrow(() -> new IllegalStateException(
                         "Authenticated principal has no app_user row: " + oid));
