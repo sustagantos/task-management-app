@@ -1,0 +1,13 @@
+[Unit]
+Description=Check for a new task tracker image every few minutes
+
+[Timer]
+# Two minutes after boot, then every five. Five minutes is the delay between
+# a green CI run and the change being live - short enough not to notice,
+# long enough not to hammer GHCR.
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target

@@ -65,11 +65,14 @@ NPMPlus, reached off-LAN over Tailscale. GitHub Actions builds and pushes to
 GHCR on every push to `main`; the container host pulls.
 
 Copy `.env.example` to `.env` on the host, `chmod 600`, and fill it from
-Vaultwarden. Then:
+Vaultwarden.
 
-```bash
-docker compose pull && docker compose up -d
-```
+Deploys are automatic: a timer on CT 217 pulls the new image within five
+minutes of a green build on `main`, waits for readiness and fails loudly if the
+new container does not come up. Pull rather than push, so nothing reaches into
+the lab and no hypervisor credential exists in CI. See
+[docs/deployment.md](docs/deployment.md) for install, rollback and how to stop
+it during an incident.
 
 ## Backups
 

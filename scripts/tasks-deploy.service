@@ -1,0 +1,14 @@
+[Unit]
+Description=Task tracker deploy (pull latest image if changed)
+Documentation=https://github.com/sustagantos/task-management-app
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/tasks/scripts/deploy.sh
+# A failed deploy must be visible. The script exits non-zero when the new
+# container never becomes ready, so systemctl status shows a failed unit
+# instead of a green timer hiding a broken app.
+StandardOutput=journal
+StandardError=journal
