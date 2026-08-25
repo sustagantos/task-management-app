@@ -1,0 +1,172 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --line: #e3e3e3;
+  --accent: #2563eb;
+  --danger: #b42318;
+  --p0: #b42318;
+  --p1: #b54708;
+  --p2: #475467;
+  --p3: #98a2b3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181c;
+    --fg: #e8e8e8;
+    --muted: #9aa0a6;
+    --line: #2c2f36;
+    --accent: #7aa2f7;
+    --danger: #f97066;
+    --p0: #f97066;
+    --p1: #f9a03f;
+    --p2: #9aa0a6;
+    --p3: #6b7280;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.header h1 { font-size: 1.35rem; margin: 0; }
+
+/* Quick add sits first and stays first. Capture has to be instant. */
+.quickadd {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.quickadd input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+.quickadd input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+.quickadd select,
+.quickadd button {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.quickadd button { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.quickadd button:disabled { opacity: 0.45; cursor: default; }
+
+.filters { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.75rem; }
+
+.chip {
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.chip-on { border-color: var(--accent); color: var(--accent); }
+.count { margin-left: auto; color: var(--muted); font-size: 0.85rem; }
+
+.tasks { list-style: none; margin: 0; padding: 0; }
+.children { margin-left: 1.6rem; border-left: 2px solid var(--line); padding-left: 0.6rem; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.check {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.check:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 20%, transparent); }
+
+.pri { flex: none; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; }
+.pri-0 { color: var(--p0); }
+.pri-1 { color: var(--p1); }
+.pri-2 { color: var(--p2); }
+.pri-3 { color: var(--p3); }
+
+.title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+.progress, .age, .ctx, .badge {
+  flex: none;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.ctx { padding: 0.05rem 0.45rem; border: 1px solid var(--line); border-radius: 999px; }
+.ctx-personal { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+
+.closed { margin-top: 2rem; }
+
+.closed-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.done-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0; }
+.done { flex: 1; text-decoration: line-through; color: var(--muted); }
+.cancelled { font-style: italic; }
+.badge { border: 1px solid var(--line); border-radius: 4px; padding: 0 0.3rem; }
+
+.link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.subtle { color: var(--muted); }
+.subtle:hover { color: var(--danger); }
+
+.empty { color: var(--muted); padding: 2rem 0; text-align: center; }
+.error { color: var(--danger); margin: 0.5rem 0; }
