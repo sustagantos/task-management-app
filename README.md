@@ -16,8 +16,8 @@ CT 217. Entra sign-in works end to end, `V1__init.sql` is applied, and the first
 | M | Deliverable | State |
 |---|---|---|
 | M0 | Repo, CI, container build, CT, Entra registration, hello world behind login | **done** |
-| M1 | Owner-scoped CRUD, event log, main page, quick add, hierarchy rules | built, pending verification |
-| M2 | History page, closed-today boundary incl. midnight rollover | |
+| M1 | Owner-scoped CRUD, event log, main page, quick add, hierarchy rules | **done** |
+| M2 | History page, closed-today boundary incl. midnight rollover | built, pending verification |
 | M3 | Tier 1 analytics + weekly review page | |
 | M4 | Tier 2 analytics | |
 | M5 | Tier 3 analytics | |

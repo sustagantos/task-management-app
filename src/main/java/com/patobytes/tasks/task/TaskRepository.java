@@ -58,4 +58,70 @@ public interface TaskRepository extends Repository<Task, UUID> {
         long getTotal();
         long getDone();
     }
+
+    /** Closures in a half-open instant range. Used for the yesterday count on the main page. */
+    long countByOwnerIdAndClosedAtGreaterThanEqualAndClosedAtLessThan(
+            UUID ownerId, Instant from, Instant to);
+
+    /**
+     * History search over closed and cancelled tasks.
+     *
+     * <p>Open tasks are deliberately excluded: they are all on the main page,
+     * which has its own filter. Mixing them in would mean a date range that
+     * applies to closed_at for some rows and created_at for others, which is
+     * the kind of rule nobody can remember a month later.
+     *
+     * <p>Every optional filter is cast explicitly. Postgres cannot infer the
+     * type of a bare parameter in `:x is null`, and the failure is a runtime
+     * "could not determine data type" rather than anything caught at startup.
+     *
+     * <p>ILIKE rather than full-text search: at a few thousand rows per person
+     * a sequential scan is instant, and tsvector would need a column, a trigger
+     * and a language choice for a problem nobody has yet.
+     */
+    @Query(value = """
+            select * from task
+             where owner_id = :ownerId
+               and status <> 'OPEN'
+               and closed_at >= :from
+               and closed_at < :to
+               and (cast(:status as text) is null or status = cast(:status as text))
+               and (cast(:context as text) is null or context = cast(:context as text))
+               and (cast(:tag as text) is null or cast(:tag as text) = any(tags))
+               and (cast(:q as text) is null
+                    or title ilike cast(:q as text)
+                    or coalesce(description, '') ilike cast(:q as text))
+             order by closed_at desc
+             limit :limit offset :offset
+            """, nativeQuery = true)
+    List<Task> history(@Param("ownerId") UUID ownerId,
+                       @Param("from") Instant from,
+                       @Param("to") Instant to,
+                       @Param("status") String status,
+                       @Param("context") String context,
+                       @Param("tag") String tag,
+                       @Param("q") String q,
+                       @Param("limit") int limit,
+                       @Param("offset") int offset);
+
+    @Query(value = """
+            select count(*) from task
+             where owner_id = :ownerId
+               and status <> 'OPEN'
+               and closed_at >= :from
+               and closed_at < :to
+               and (cast(:status as text) is null or status = cast(:status as text))
+               and (cast(:context as text) is null or context = cast(:context as text))
+               and (cast(:tag as text) is null or cast(:tag as text) = any(tags))
+               and (cast(:q as text) is null
+                    or title ilike cast(:q as text)
+                    or coalesce(description, '') ilike cast(:q as text))
+            """, nativeQuery = true)
+    long countHistory(@Param("ownerId") UUID ownerId,
+                      @Param("from") Instant from,
+                      @Param("to") Instant to,
+                      @Param("status") String status,
+                      @Param("context") String context,
+                      @Param("tag") String tag,
+                      @Param("q") String q);
 }

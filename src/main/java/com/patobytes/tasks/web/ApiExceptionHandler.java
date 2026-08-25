@@ -31,6 +31,12 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(e.getMessage()));
     }
 
+    /** Query-string arguments the controller rejects: bad date range, open status filter. */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> badArgument(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(new ApiError(e.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> invalid(MethodArgumentNotValidException e) {
         String detail = e.getBindingResult().getFieldErrors().stream()

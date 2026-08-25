@@ -170,3 +170,57 @@ body {
 
 .empty { color: var(--muted); padding: 2rem 0; text-align: center; }
 .error { color: var(--danger); margin: 0.5rem 0; }
+
+/* ---- history ---- */
+
+.history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.history-filters .grow { flex: 1 1 14rem; min-width: 0; }
+
+.history-filters input,
+.history-filters select,
+.history-filters button[type="submit"] {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+.history-filters button[type="submit"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.field { display: flex; flex-direction: column; gap: 0.15rem; }
+.field > span { font-size: 0.72rem; color: var(--muted); }
+
+.count-line { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.5rem; }
+.when { flex: none; width: 8.5rem; color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.cancelled { color: var(--muted); font-style: italic; }
+
+.pager { display: flex; gap: 0.5rem; margin-top: 1rem; }
+
+.pager button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.pager button:disabled { opacity: 0.4; cursor: default; }
+
+.yesterday { margin: 1rem 0 0; font-size: 0.85rem; }
+.yesterday a { color: var(--muted); }

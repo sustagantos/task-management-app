@@ -20,6 +20,8 @@ export interface TaskView {
 export interface MainPage {
   open: TaskView[]
   closedToday: TaskView[]
+  /** Count only. The list itself lives on the history page. */
+  closedYesterday: number
   /** The server's day-boundary timezone. The browser must not substitute its own. */
   timezone: string
 }
@@ -67,6 +69,37 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const getMainPage = () => api<MainPage>('/api/tasks')
+
+export interface HistoryPage {
+  items: TaskView[]
+  /** Total before the limit, so the page can say "50 of 312" rather than leaving it ambiguous. */
+  total: number
+  limit: number
+  offset: number
+  /** Same day-boundary timezone the main page uses, so date inputs agree with the server. */
+  timezone: string
+}
+
+export interface HistoryQuery {
+  from?: string
+  to?: string
+  status?: 'DONE' | 'CANCELLED'
+  context?: TaskContext
+  tag?: string
+  q?: string
+  limit?: number
+  offset?: number
+}
+
+export function getHistory(query: HistoryQuery) {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, String(value))
+    }
+  }
+  return api<HistoryPage>('/api/tasks/history?' + params.toString())
+}
 
 export const createTask = (task: NewTask) =>
   api<TaskView>('/api/tasks', { method: 'POST', body: JSON.stringify(task) })

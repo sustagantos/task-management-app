@@ -46,6 +46,59 @@ public class TaskService {
         return tasks.findByOwnerIdAndClosedAtGreaterThanEqualOrderByClosedAtDesc(ownerId, startOfDay);
     }
 
+    /** How many closed yesterday, for the link off the main page into history. */
+    @Transactional(readOnly = true)
+    public long closedYesterdayCount(UUID ownerId) {
+        LocalDate today = LocalDate.now(properties.timezone());
+        Instant startOfToday = today.atStartOfDay(properties.timezone()).toInstant();
+        Instant startOfYesterday = today.minusDays(1).atStartOfDay(properties.timezone()).toInstant();
+        return tasks.countByOwnerIdAndClosedAtGreaterThanEqualAndClosedAtLessThan(
+                ownerId, startOfYesterday, startOfToday);
+    }
+
+    /**
+     * History over closed and cancelled tasks.
+     *
+     * <p>Callers pass local dates, because that is what a person picks. The
+     * conversion to instants happens here against the application timezone, so
+     * "the 3rd" means the 3rd in Sao Paulo and not a UTC day that starts at
+     * 21:00 the evening before.
+     *
+     * <p>{@code to} is inclusive of the whole day: the range becomes
+     * [from 00:00, to+1 day 00:00).
+     */
+    @Transactional(readOnly = true)
+    public HistoryPage history(UUID ownerId, LocalDate from, LocalDate to,
+                               TaskStatus status, TaskContext context,
+                               String tag, String query, int limit, int offset) {
+        Instant fromInstant = from.atStartOfDay(properties.timezone()).toInstant();
+        Instant toInstant = to.plusDays(1).atStartOfDay(properties.timezone()).toInstant();
+
+        String statusFilter = status == null ? null : status.name();
+        String contextFilter = context == null ? null : context.name();
+        String tagFilter = (tag == null || tag.isBlank()) ? null : tag.trim();
+
+        // Wildcards belong here, not in the query string. Escaping the LIKE
+        // metacharacters first stops a search for "50%" matching everything.
+        String like = null;
+        if (query != null && !query.isBlank()) {
+            String escaped = query.trim()
+                    .replace("\\", "\\\\")
+                    .replace("%", "\\%")
+                    .replace("_", "\\_");
+            like = "%" + escaped + "%";
+        }
+
+        List<Task> items = tasks.history(ownerId, fromInstant, toInstant,
+                statusFilter, contextFilter, tagFilter, like, limit, offset);
+        long total = tasks.countHistory(ownerId, fromInstant, toInstant,
+                statusFilter, contextFilter, tagFilter, like);
+
+        return new HistoryPage(items, total, limit, offset);
+    }
+
+    public record HistoryPage(List<Task> items, long total, int limit, int offset) {}
+
     @Transactional(readOnly = true)
     public Task require(UUID ownerId, UUID id) {
         return tasks.findByIdAndOwnerId(id, ownerId).orElseThrow(() -> new TaskNotFound(id));
