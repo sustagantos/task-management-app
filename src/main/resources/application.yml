@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: tasks
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tasks}
+    username: ${DB_USER:tasks}
+    password: ${DB_PASSWORD:tasks}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema. Hibernate must never touch it - a stray
+      # ddl-auto would silently diverge from the migrations.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  security:
+    oauth2:
+      client:
+        registration:
+          # The registration id 'entra' is part of the redirect URI registered
+          # in Entra: /login/oauth2/code/entra. Renaming it here breaks sign-in.
+          entra:
+            client-id: ${ENTRA_CLIENT_ID}
+            client-secret: ${ENTRA_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            authorization-grant-type: authorization_code
+            client-name: PatoBytes Entra ID
+        provider:
+          entra:
+            issuer-uri: https://login.microsoftonline.com/${ENTRA_TENANT_ID}/v2.0
+            user-name-attribute: oid
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+app:
+  # Every day-boundary calculation goes through this. "Closed today" is a
+  # local-day rule, so it is never derived from the browser or the JVM default.
+  timezone: America/Sao_Paulo
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    org.springframework.security: INFO

@@ -1,0 +1,14 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+node_modules/
+frontend/dist/
+src/main/resources/static/
+
+.env
+*.log
+
+.idea/
+.vscode/
+*.iml
+.DS_Store

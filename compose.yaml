@@ -1,0 +1,51 @@
+# Deployment target is CT 217 (192.168.99.217) on pve3, published as
+# tasks.lab.patobytes.com via NPMPlus. See the design record in
+# patobytes-context: infra/self-hosted/task-tracker.md
+#
+# Secrets come from a chmod 600 .env file on the container host, whose master
+# copy lives in Vaultwarden. Never commit a filled-in .env.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tasks
+      POSTGRES_USER: tasks
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      # Keep the server in UTC. Local-day bucketing is the application's job
+      # and goes through app.timezone, never the server default.
+      TZ: UTC
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tasks -d tasks"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: ghcr.io/sustagantos/task-management-app:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/tasks
+      DB_USER: tasks
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:?set ENTRA_TENANT_ID in .env}
+      ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID:?set ENTRA_CLIENT_ID in .env}
+      ENTRA_CLIENT_SECRET: ${ENTRA_CLIENT_SECRET:?set ENTRA_CLIENT_SECRET in .env}
+    ports:
+      # Bound to the LAN address so NPMPlus on 192.168.99.203 can reach it.
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  db-data:
