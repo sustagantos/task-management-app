@@ -29,13 +29,7 @@ public class UserProvisioningService extends OidcUserService {
     public OidcUser loadUser(OidcUserRequest request) throws OAuth2AuthenticationException {
         OidcUser oidcUser = super.loadUser(request);
 
-        // oid comes from the ID token, not the UserInfo endpoint - Microsoft's
-        // UserInfo response does not carry it. Read the ID token explicitly so
-        // this does not silently depend on claim-merging behaviour.
-        String oid = oidcUser.getIdToken().getClaimAsString("oid");
-        if (oid == null || oid.isBlank()) {
-            oid = oidcUser.getClaimAsString("oid");
-        }
+        String oid = resolveOid(oidcUser);
         if (oid == null || oid.isBlank()) {
             // Without a stable object id there is nothing safe to key on, and
             // falling back to email would silently orphan tasks on a rename.
@@ -57,6 +51,22 @@ public class UserProvisioningService extends OidcUserService {
                         () -> users.save(new AppUser(oid, email, displayName)));
 
         return oidcUser;
+    }
+
+    /**
+     * The Entra object id, from the ID token.
+     *
+     * <p>Deliberately not from the UserInfo endpoint: Microsoft's returns only
+     * sub, name, given_name, family_name, email and picture. The merged claim
+     * view is a fallback, so the identity key does not silently depend on
+     * Spring's merge behaviour.
+     */
+    static String resolveOid(OidcUser user) {
+        String fromIdToken = user.getIdToken().getClaimAsString("oid");
+        if (fromIdToken != null && !fromIdToken.isBlank()) {
+            return fromIdToken;
+        }
+        return user.getClaimAsString("oid");
     }
 
     private static String firstNonBlank(String... candidates) {
