@@ -1,0 +1,15 @@
+[Unit]
+Description=Nightly task tracker database backup
+
+[Timer]
+# 03:30 UTC is 00:30 in America/Sao_Paulo. Expressed in UTC because the
+# container runs UTC and an explicit offset is easier to reason about at 3am
+# than a timezone name that may or may not be installed.
+OnCalendar=*-*-* 03:30:00
+# Run on next boot if the machine was down when the timer was due, so a
+# container restarted in the evening does not silently skip a night.
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

@@ -21,7 +21,7 @@ CT 217. Entra sign-in works end to end, `V1__init.sql` is applied, and the first
 | M3 | Tier 1 analytics + weekly review page | |
 | M4 | Tier 2 analytics | |
 | M5 | Tier 3 analytics | |
-| M6 | Backup job, restore drill, Uptime Kuma check | |
+| M6 | Backup job, restore drill, Uptime Kuma check | backup pulled forward, done |
 
 ## Stack
 
@@ -70,6 +70,13 @@ Vaultwarden. Then:
 ```bash
 docker compose pull && docker compose up -d
 ```
+
+## Backups
+
+Nightly `pg_dump` at 03:30 UTC via `tasks-backup.timer`, verified with
+`pg_restore --list` before being kept, 14-day retention. Install steps, the
+restore drill and the real restore procedure are in
+[docs/backup-and-restore.md](docs/backup-and-restore.md).
 
 ## Conventions
 

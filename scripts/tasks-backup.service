@@ -1,0 +1,13 @@
+[Unit]
+Description=Task tracker database backup
+Documentation=https://github.com/sustagantos/task-management-app
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/tasks/scripts/backup.sh
+# The script refuses to keep an unverified dump, so a non-zero exit means there
+# is no backup for tonight. Surface it rather than swallowing it.
+StandardOutput=journal
+StandardError=journal
