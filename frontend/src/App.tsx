@@ -1,6 +1,12 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import MainPage from './MainPage'
 import History from './History'
+
+// Recharts is 420 kB of the bundle. Loading it on the main page - the one
+// opened dozens of times a day - to render charts that are not on screen is
+// the wrong trade. These two routes fetch it on first visit instead.
+const Analytics = lazy(() => import('./Analytics'))
+const Review = lazy(() => import('./Review'))
 import './app.css'
 
 /**
@@ -24,5 +30,14 @@ function useHashRoute(): string {
 
 export default function App() {
   const route = useHashRoute()
-  return route === 'history' ? <History /> : <MainPage />
+  switch (route) {
+    case 'history':
+      return <History />
+    case 'analytics':
+      return <Suspense fallback={<main className="page">Loading charts...</main>}><Analytics /></Suspense>
+    case 'review':
+      return <Suspense fallback={<main className="page">Loading...</main>}><Review /></Suspense>
+    default:
+      return <MainPage />
+  }
 }

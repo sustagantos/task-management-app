@@ -78,7 +78,12 @@ export default function MainPage() {
     <main className="page">
       <header className="header">
         <h1>Tasks</h1>
-        <button className="link" onClick={signOut}>Sign out</button>
+        <nav className="header-links">
+          <a className="link" href="#/review">Review</a>
+          <a className="link" href="#/analytics">Analytics</a>
+          <a className="link" href="#/history">History</a>
+          <button className="link" onClick={signOut}>Sign out</button>
+        </nav>
       </header>
 
       <QuickAdd onAdd={t => add.mutate(t)} busy={add.isPending} />

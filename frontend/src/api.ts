@@ -143,3 +143,102 @@ export const PRIORITY_LABELS = ['P0', 'P1', 'P2', 'P3']
 export function ageInDays(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
 }
+
+// ---- analytics ----
+
+export interface ThroughputPoint {
+  day: string
+  workDone: number
+  personalDone: number
+  cancelled: number
+  trailing7: number
+  trailing28: number
+}
+
+export interface Throughput {
+  points: ThroughputPoint[]
+  timezone: string
+}
+
+export interface CycleTimeRow {
+  dimension: 'OVERALL' | 'PRIORITY' | 'CONTEXT'
+  bucket: string
+  count: number
+  p50Seconds: number | null
+  p90Seconds: number | null
+}
+
+export interface BacklogPoint {
+  week: string
+  created: number
+  closed: number
+  net: number
+  cumulative: number
+}
+
+export interface AgingBucket {
+  bucket: string
+  count: number
+}
+
+export interface OpenTask {
+  id: string
+  title: string
+  priority: number
+  context: TaskContext
+  createdAt: string
+  ageDays: number
+}
+
+export interface Aging {
+  buckets: AgingBucket[]
+  oldest: OpenTask[]
+}
+
+export interface ContextCount {
+  context: TaskContext
+  count: number
+}
+
+export interface WeeklyReview {
+  done: ContextCount[]
+  cancelled: ContextCount[]
+  created: number
+  closed: number
+  net: number
+  oldestOpen: OpenTask[]
+  stale: OpenTask[]
+  staleAfterDays: number
+}
+
+export const getThroughput = (days = 90) =>
+  api<Throughput>(`/api/analytics/throughput?days=${days}`)
+
+export const getCycleTime = (days = 180) =>
+  api<CycleTimeRow[]>(`/api/analytics/cycle-time?days=${days}`)
+
+export const getBacklog = (weeks = 12) =>
+  api<BacklogPoint[]>(`/api/analytics/backlog?weeks=${weeks}`)
+
+export const getAging = () => api<Aging>('/api/analytics/aging')
+
+export const getWeeklyReview = () => api<WeeklyReview>('/api/analytics/weekly-review')
+
+/**
+ * Cycle time in the largest unit that still reads honestly.
+ *
+ * Minutes below an hour, hours below a day, then days with one decimal - a
+ * median of "2.3d" says more than "199584s" or a rounded "2d".
+ */
+export function formatDuration(seconds: number | null): string {
+  if (seconds === null || Number.isNaN(seconds)) return '-'
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m`
+  if (seconds < 86400) return `${(seconds / 3600).toFixed(1)}h`
+  return `${(seconds / 86400).toFixed(1)}d`
+}
+
+/** dd MMM for chart axes, in the server timezone. */
+export function shortDate(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-GB', { timeZone, day: '2-digit', month: 'short' })
+    .format(new Date(iso + 'T12:00:00Z'))
+}

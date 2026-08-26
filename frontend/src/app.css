@@ -224,3 +224,95 @@ body {
 
 .yesterday { margin: 1rem 0 0; font-size: 0.85rem; }
 .yesterday a { color: var(--muted); }
+
+/* ---- charts ----
+   Palette from the validated reference set. Both modes checked against this
+   app's actual surfaces (#ffffff / #16181c), not the defaults: two categorical
+   slots pass every gate, and the four age bands pass the ordinal ramp checks.
+   Do not hand-tune these; re-run the validator instead. */
+
+:root {
+  --series-1: #2a78d6;   /* blue   - work, closed */
+  --series-2: #eb6834;   /* orange - personal, created */
+  --band-1: #86b6ef;
+  --band-2: #5598e7;
+  --band-3: #2a78d6;
+  --band-4: #184f95;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  --chart-ink: #52514e;
+  --good: #0ca30c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --band-1: #9ec5f4;
+    --band-2: #6da7ec;
+    --band-3: #3987e5;
+    --band-4: #256abf;
+    --chart-grid: #2c2c2a;
+    --chart-axis: #383835;
+    --chart-ink: #c3c2b7;
+    --good: #3fbf3f;
+  }
+}
+
+.page.wide { max-width: 58rem; }
+.header-links { display: flex; align-items: baseline; gap: 0.9rem; }
+
+.viz { margin: 2.25rem 0; }
+.viz-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.viz-head h2 { font-size: 1rem; margin: 0 0 0.15rem; }
+.viz-sub { font-size: 0.85rem; margin: 1.25rem 0 0.4rem; color: var(--muted); }
+
+.viz-note {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 0.75rem;
+  max-width: 46rem;
+}
+
+.viz-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.viz-table th, .viz-table td { text-align: left; padding: 0.3rem 0.6rem 0.3rem 0; border-bottom: 1px solid var(--line); }
+.viz-table th { color: var(--muted); font-weight: 500; }
+.viz-table td { font-variant-numeric: tabular-nums; }
+.viz-table .row-strong td { font-weight: 600; }
+.viz-table { display: block; max-height: 22rem; overflow: auto; }
+
+.stat { margin: 0 0 0.6rem; font-size: 0.85rem; color: var(--muted); }
+.stat strong { font-size: 1.5rem; font-weight: 600; margin-right: 0.35rem; }
+.stat-good strong { color: var(--good); }
+.stat-bad strong { color: var(--danger); }
+.stat-sub { margin-left: 0.5rem; }
+
+.kpis { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+
+.kpi {
+  flex: 1 1 8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.kpi-value { font-size: 1.75rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi-label { font-size: 0.8rem; color: var(--muted); }
+.kpi-sub { font-size: 0.72rem; color: var(--muted); }
+.kpi-good .kpi-value { color: var(--good); }
+.kpi-bad .kpi-value { color: var(--danger); }
+
+.plain { list-style: none; margin: 0; padding: 0; }
+.plain li { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+
+.age-badge {
+  flex: none;
+  min-width: 2.6rem;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
