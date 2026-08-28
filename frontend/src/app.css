@@ -316,3 +316,107 @@ body {
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- task detail panel ---- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 1rem;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.panel {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  width: min(38rem, 100%);
+  padding: 1.25rem 1.4rem 1.6rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.panel-head h2 { font-size: 1.1rem; margin: 0 0 0.5rem; overflow-wrap: anywhere; }
+
+.facts { display: flex; flex-wrap: wrap; gap: 0 1.5rem; margin: 0 0 0.75rem; }
+.facts > div { display: flex; gap: 0.4rem; align-items: baseline; }
+.facts dt { color: var(--muted); font-size: 0.75rem; }
+.facts dd { margin: 0; font-size: 0.85rem; }
+
+.desc {
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  border-left: 2px solid var(--line);
+  padding-left: 0.7rem;
+  margin: 0 0 1rem;
+}
+
+.panel-actions { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.5rem; }
+
+.panel-actions button:not(.link) {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.panel-section { border-top: 1px solid var(--line); margin-top: 1.1rem; padding-top: 0.9rem; }
+.panel-section h3 { font-size: 0.82rem; margin: 0 0 0.5rem; color: var(--muted); font-weight: 600; }
+.panel-section select { padding: 0.4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; }
+
+.relative { display: flex; align-items: center; gap: 0.8rem; margin: 0; }
+.muted-note { color: var(--muted); font-size: 0.82rem; margin: 0; font-weight: 400; }
+
+/* A title that opens something. Inherits the row's type; the affordance is the
+   hover underline, not a different colour - a list of blue titles reads as a
+   list of links rather than a list of tasks. */
+.title-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.title-link:hover { text-decoration: underline; }
+button.title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+.subtask-add { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+
+.subtask-add input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+.subtask-add button {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.subtask-add button:disabled { opacity: 0.45; cursor: default; }
+
+.timeline li { font-size: 0.82rem; color: var(--muted); border-bottom: none; padding: 0.15rem 0; }
+.timeline .when { width: 8.5rem; }

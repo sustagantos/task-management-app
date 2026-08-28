@@ -7,6 +7,7 @@ import {
   type TaskContext,
   type TaskView,
 } from './api'
+import TaskDetail from './TaskDetail'
 
 const PAGE_SIZE = 50
 
@@ -24,6 +25,7 @@ export default function History() {
   const [draft, setDraft] = useState<HistoryQuery>({})
   const [applied, setApplied] = useState<HistoryQuery>({})
   const [offset, setOffset] = useState(0)
+  const [selected, setSelected] = useState<string | null>(null)
 
   const { data, isPending, error } = useQuery({
     queryKey: ['history', applied, offset],
@@ -114,7 +116,7 @@ export default function History() {
           <ul className="tasks">
             {data.items.map(task => (
               <li key={task.id}>
-                <HistoryRow task={task} timezone={data.timezone} />
+                <HistoryRow task={task} timezone={data.timezone} onOpen={() => setSelected(task.id)} />
               </li>
             ))}
           </ul>
@@ -137,11 +139,19 @@ export default function History() {
           )}
         </>
       )}
+
+      {selected && (
+        <TaskDetail id={selected} onClose={() => setSelected(null)} onOpenOther={setSelected} />
+      )}
     </main>
   )
 }
 
-function HistoryRow({ task, timezone }: { task: TaskView; timezone: string }) {
+function HistoryRow({ task, timezone, onOpen }: {
+  task: TaskView
+  timezone: string
+  onOpen: () => void
+}) {
   // Formatted in the server's timezone so a row never appears under a date the
   // server would not agree with.
   const closed = task.closedAt
@@ -159,9 +169,12 @@ function HistoryRow({ task, timezone }: { task: TaskView; timezone: string }) {
     <div className="row">
       <span className="when">{closed}</span>
       <span className={`pri pri-${task.priority}`}>{PRIORITY_LABELS[task.priority]}</span>
-      <span className={task.status === 'CANCELLED' ? 'title cancelled' : 'title'}>
+      <button
+        className={task.status === 'CANCELLED' ? 'title title-link cancelled' : 'title title-link'}
+        onClick={onOpen}
+      >
         {task.title}
-      </span>
+      </button>
       {task.status === 'CANCELLED' && <span className="badge">cancelled</span>}
       <span className={task.context === 'WORK' ? 'ctx ctx-work' : 'ctx ctx-personal'}>
         {task.context === 'WORK' ? 'work' : 'personal'}

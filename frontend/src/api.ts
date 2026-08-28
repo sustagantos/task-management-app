@@ -104,6 +104,32 @@ export function getHistory(query: HistoryQuery) {
 export const createTask = (task: NewTask) =>
   api<TaskView>('/api/tasks', { method: 'POST', body: JSON.stringify(task) })
 
+export interface TaskEventView {
+  at: string
+  type: string
+  fromValue: string | null
+  toValue: string | null
+}
+
+export interface TaskDetail {
+  task: TaskView
+  parent: TaskView | null
+  children: TaskView[]
+  events: TaskEventView[]
+}
+
+export const getTaskDetail = (id: string) => api<TaskDetail>(`/api/tasks/${id}/detail`)
+
+export const getParentCandidates = (excluding: string) =>
+  api<TaskView[]>(`/api/tasks/parent-candidates?excluding=${excluding}`)
+
+/** null detaches. */
+export const setParent = (id: string, parentId: string | null) =>
+  api<TaskView>(`/api/tasks/${id}/parent`, {
+    method: 'POST',
+    body: JSON.stringify({ parentId }),
+  })
+
 export const closeTask = (id: string) => api<TaskView>(`/api/tasks/${id}/close`, { method: 'POST' })
 export const cancelTask = (id: string) => api<TaskView>(`/api/tasks/${id}/cancel`, { method: 'POST' })
 export const reopenTask = (id: string) => api<TaskView>(`/api/tasks/${id}/reopen`, { method: 'POST' })

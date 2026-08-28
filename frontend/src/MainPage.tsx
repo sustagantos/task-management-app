@@ -13,6 +13,7 @@ import {
   type TaskContext,
   type TaskView,
 } from './api'
+import TaskDetail from './TaskDetail'
 
 type Filter = 'ALL' | 'WORK' | 'PERSONAL'
 
@@ -21,6 +22,7 @@ export default function MainPage() {
   const [filter, setFilter] = useState<Filter>('ALL')
   const [error, setError] = useState<string | null>(null)
   const [showClosed, setShowClosed] = useState(true)
+  const [selected, setSelected] = useState<string | null>(null)
 
   const { data, isPending, error: loadError } = useQuery({
     queryKey: ['tasks'],
@@ -111,6 +113,7 @@ export default function MainPage() {
             <li key={task.id}>
               <TaskRow
                 task={task}
+                onOpen={() => setSelected(task.id)}
                 onClose={() => close.mutate(task.id)}
                 onCancel={() => cancel.mutate(task.id)}
               />
@@ -120,6 +123,7 @@ export default function MainPage() {
                     <li key={child.id}>
                       <TaskRow
                         task={child}
+                        onOpen={() => setSelected(child.id)}
                         onClose={() => close.mutate(child.id)}
                         onCancel={() => cancel.mutate(child.id)}
                       />
@@ -147,9 +151,12 @@ export default function MainPage() {
             <ul className="tasks">
               {closed.map(task => (
                 <li key={task.id} className="done-row">
-                  <span className={task.status === 'CANCELLED' ? 'done cancelled' : 'done'}>
+                  <button
+                    className={task.status === 'CANCELLED' ? 'link done cancelled' : 'link done'}
+                    onClick={() => setSelected(task.id)}
+                  >
                     {task.title}
-                  </span>
+                  </button>
                   {task.status === 'CANCELLED' && <span className="badge">cancelled</span>}
                   <button className="link" onClick={() => reopen.mutate(task.id)}>Undo</button>
                 </li>
@@ -157,6 +164,13 @@ export default function MainPage() {
             </ul>
           )}
         </section>
+      )}
+      {selected && (
+        <TaskDetail
+          id={selected}
+          onClose={() => setSelected(null)}
+          onOpenOther={setSelected}
+        />
       )}
     </main>
   )
@@ -211,13 +225,20 @@ function QuickAdd({ onAdd, busy }: { onAdd: (t: { title: string; priority: numbe
   )
 }
 
-function TaskRow({ task, onClose, onCancel }: { task: TaskView; onClose: () => void; onCancel: () => void }) {
+function TaskRow({ task, onOpen, onClose, onCancel }: {
+  task: TaskView
+  onOpen: () => void
+  onClose: () => void
+  onCancel: () => void
+}) {
   const age = ageInDays(task.createdAt)
   return (
     <div className="row">
       <button className="check" onClick={onClose} title="Mark done" aria-label={`Close ${task.title}`} />
       <span className={`pri pri-${task.priority}`}>{PRIORITY_LABELS[task.priority]}</span>
-      <span className="title">{task.title}</span>
+      {/* The title opens the detail panel; the circle closes the task. Making
+          the whole row clickable would put those two a few pixels apart. */}
+      <button className="title title-link" onClick={onOpen}>{task.title}</button>
       {task.childrenTotal > 0 && (
         <span className="progress">{task.childrenDone}/{task.childrenTotal} done</span>
       )}
