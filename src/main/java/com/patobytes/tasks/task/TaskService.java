@@ -174,6 +174,71 @@ public class TaskService {
         return task;
     }
 
+    public record TaskDetail(Task task, Task parent, List<Task> children, List<TaskEvent> events) {}
+
+    /** Everything the detail panel shows, in one round trip. */
+    @Transactional(readOnly = true)
+    public TaskDetail detail(UUID ownerId, UUID id) {
+        Task task = require(ownerId, id);
+        Task parent = task.getParentId() == null
+                ? null
+                : tasks.findByIdAndOwnerId(task.getParentId(), ownerId).orElse(null);
+        return new TaskDetail(
+                task,
+                parent,
+                tasks.findByOwnerIdAndParentId(ownerId, id),
+                events.findByTaskIdOrderByAtAsc(id));
+    }
+
+    /**
+     * Open, top-level tasks this one could be attached to.
+     *
+     * <p>Only depth-0 tasks qualify, because the depth cap of two means a
+     * subtask cannot itself be a parent. Closed tasks are excluded: attaching
+     * live work to something already finished reads as a mistake.
+     */
+    @Transactional(readOnly = true)
+    public List<Task> parentCandidates(UUID ownerId, UUID excluding) {
+        return tasks.findByOwnerIdAndStatusAndParentIdIsNullOrderByCreatedAtAsc(ownerId, TaskStatus.OPEN)
+                .stream()
+                .filter(t -> !t.getId().equals(excluding))
+                .toList();
+    }
+
+    /**
+     * Attach to a parent, move between parents, or detach with a null.
+     *
+     * <p>Separate from {@link #edit} so the detail panel can change one
+     * relationship without resending every field - a PATCH that carries the
+     * whole task will happily overwrite a description someone edited in another
+     * tab.
+     */
+    @Transactional
+    public Task reparent(UUID ownerId, UUID id, UUID newParentId) {
+        Task task = require(ownerId, id);
+        UUID oldParentId = task.getParentId();
+        if (Objects.equals(oldParentId, newParentId)) {
+            return task;
+        }
+
+        if (newParentId != null) {
+            if (newParentId.equals(id)) {
+                throw new TaskRuleViolation("A task cannot be its own parent");
+            }
+            requireCanBeParent(ownerId, newParentId);
+            if (tasks.countByOwnerIdAndParentId(ownerId, id) > 0) {
+                throw new TaskRuleViolation(
+                        "This task already has subtasks, so it cannot become one. Maximum depth is two.");
+            }
+        }
+
+        task.reparent(newParentId);
+        events.save(new TaskEvent(id, TaskEventType.REPARENTED,
+                oldParentId == null ? null : oldParentId.toString(),
+                newParentId == null ? null : newParentId.toString()));
+        return task;
+    }
+
     @Transactional
     public Task close(UUID ownerId, UUID id) {
         return terminate(ownerId, id, TaskStatus.DONE, TaskEventType.CLOSED);
@@ -200,11 +265,13 @@ public class TaskService {
         if (!task.isOpen()) {
             throw new TaskRuleViolation("Task is already closed");
         }
-        // Closing a parent does not cascade. Silently closing someone's open
-        // subtasks loses work; refusing makes them look at it.
-        if (tasks.existsByOwnerIdAndParentIdAndStatus(ownerId, id, TaskStatus.OPEN)) {
-            throw new TaskRuleViolation("This task still has open subtasks. Close or cancel those first.");
-        }
+        // Closing is independent of the hierarchy in both directions: it does not
+        // cascade to children, and open children do not block a parent.
+        //
+        // This originally refused to close a parent that still had open
+        // subtasks. That was wrong in practice - a parent is often finished
+        // while a low-priority subtask stays open indefinitely, and the block
+        // just forced busywork. The link is informational, not structural.
         task.close(terminal);
         events.save(TaskEvent.of(id, eventType));
         return task;

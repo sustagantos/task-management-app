@@ -29,7 +29,8 @@ public interface TaskRepository extends Repository<Task, UUID> {
 
     List<Task> findByOwnerIdAndParentId(UUID ownerId, UUID parentId);
 
-    boolean existsByOwnerIdAndParentIdAndStatus(UUID ownerId, UUID parentId, TaskStatus status);
+    /** Depth-0 tasks in a given status. The pool a task may be attached to. */
+    List<Task> findByOwnerIdAndStatusAndParentIdIsNullOrderByCreatedAtAsc(UUID ownerId, TaskStatus status);
 
     long countByOwnerIdAndParentId(UUID ownerId, UUID parentId);
 

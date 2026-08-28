@@ -111,6 +111,17 @@ public class TaskController {
     public record HistoryPage(List<TaskView> items, long total, int limit, int offset,
                               String timezone) {}
 
+    /**
+     * A task plus everything around it.
+     *
+     * <p>Parent and children are full views rather than ids, so the panel can
+     * show a title and a status without a second round trip per relative.
+     */
+    public record TaskDetailView(TaskView task, TaskView parent, List<TaskView> children,
+                                 List<EventView> events) {}
+
+    public record ParentRequest(UUID parentId) {}
+
     public record EventView(Instant at, String type, String fromValue, String toValue) {
         static EventView of(TaskEvent e) {
             return new EventView(e.getAt(), e.getType().name(), e.getFromValue(), e.getToValue());
@@ -169,6 +180,33 @@ public class TaskController {
         return new HistoryPage(
                 page.items().stream().map(t -> TaskView.of(t, Map.of())).toList(),
                 page.total(), page.limit(), page.offset(), properties.timezone().getId());
+    }
+
+    @GetMapping("/parent-candidates")
+    public List<TaskView> parentCandidates(@RequestParam(required = false) UUID excluding) {
+        UUID owner = currentUser.require().getId();
+        return service.parentCandidates(owner, excluding).stream()
+                .map(t -> TaskView.of(t, Map.of()))
+                .toList();
+    }
+
+    @GetMapping("/{id}/detail")
+    public TaskDetailView detail(@PathVariable UUID id) {
+        UUID owner = currentUser.require().getId();
+        TaskService.TaskDetail detail = service.detail(owner, id);
+        Map<UUID, ChildProgress> progress = service.childProgress(owner);
+        return new TaskDetailView(
+                TaskView.of(detail.task(), progress),
+                detail.parent() == null ? null : TaskView.of(detail.parent(), progress),
+                detail.children().stream().map(t -> TaskView.of(t, progress)).toList(),
+                detail.events().stream().map(EventView::of).toList());
+    }
+
+    /** Attach, move, or detach with a null parentId. */
+    @PostMapping("/{id}/parent")
+    public TaskView setParent(@PathVariable UUID id, @RequestBody ParentRequest request) {
+        UUID owner = currentUser.require().getId();
+        return TaskView.of(service.reparent(owner, id, request.parentId()), service.childProgress(owner));
     }
 
     @PostMapping
